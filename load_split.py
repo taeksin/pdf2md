@@ -17,7 +17,8 @@ from splitter.sentence import SentenceTextSplitter
 from splitter.paragraph import ParagraphTextSplitter
 from splitter.semantic import SemanticChunker
 from splitter.markdown_header import MarkdownHeaderTextSplitter
-from splitter.pageSplitter import PageSplitter
+from splitter.customSplitter import CustomSplitter  # PageSplitter 대신 CustomSplitter 사용
+
 # ---------------------------------------------------------------------------
 # loader 폴더 내 각 로더 import (pdf2md는 루트에 있음)
 # ---------------------------------------------------------------------------
@@ -89,7 +90,6 @@ def main():
             key="loader_option"
         )
         
-
     # ------------------
     # 세로 구분선
     # ------------------
@@ -104,7 +104,6 @@ def main():
     # ------------------
     # Splitter 선택 및 설명
     # ------------------
-    
     with col3:
         st.markdown("#### Splitter 선택")
         splitter_option = st.radio(
@@ -112,44 +111,49 @@ def main():
             [
                 "None",  # 선택 시 분할하지 않고 Loader 결과만 표시
                 "Recursive Text Splitter",
-                # "Character-based Splitter",
                 "Token-based Splitter",
                 "Line-based Splitter",
                 "Sentence-based Splitter",
                 "Paragraph-based Splitter",
                 "Semantic-based Splitter",
                 "MarkdownHeaderTextSplitter",
-                "Page Splitter"  
+                "Custom Splitter"  # 기존 Page Splitter 대신 Custom Splitter 선택
             ],
             index=0,
             horizontal=False,
             key="splitter_option"
         )
     st.markdown("---")
+    
     loader_descriptions = {
-            "PDF2MD": "PDF2MD: PDF 파일을 Markdown 형식으로 변환하여 텍스트를 추출합니다.",
-            "PyPDF2": "PyPDF2: 기본 PDF 텍스트 추출 라이브러리입니다.",
-            "PDFPlumber": "PDFPlumber: 표와 레이아웃을 보존하며 텍스트를 추출합니다.",
-            "PDFMiner": "PDFMiner: 텍스트 추출 정밀도가 우수한 라이브러리입니다."
-        }
-    st.markdown(f"**선택된 Loader :**  {loader_option} - {loader_descriptions.get(loader_option, '')}")
+        "PDF2MD": "PDF2MD: PDF 파일을 Markdown 형식으로 변환하여 텍스트를 추출합니다.",
+        "PyPDF2": "PyPDF2: 기본 PDF 텍스트 추출 라이브러리입니다.",
+        "PDFPlumber": "PDFPlumber: 표와 레이아웃을 보존하며 텍스트를 추출합니다.",
+        "PDFMiner": "PDFMiner: 텍스트 추출 정밀도가 우수한 라이브러리입니다."
+    }
+    st.markdown(f"**선택된 Loader :** {loader_option} - {loader_descriptions.get(loader_option, '')}")
+    
     if splitter_option != "None":
         splitter_descriptions = {
             "Recursive Text Splitter": "재귀적 분할: '\\n\\n', '\\n', ' ' 등으로 분할",
-            "Character-based Splitter": "문자 기반 분할: 각 문자를 개별 요소로 분할",
             "Token-based Splitter": "토큰 기반 분할: 기본 구분자는 공백",
             "Line-based Splitter": "줄 기반 분할: 기본 구분자는 '\\n'",
             "Sentence-based Splitter": "문장 기반 분할: 기본 구분자는 '. '",
             "Paragraph-based Splitter": "단락 기반 분할: 기본 구분자는 '\\n\\n'",
             "Semantic-based Splitter": "의미 기반 분할: 문장 단위로 의미 고려",
             "MarkdownHeaderTextSplitter": "Markdown 헤더 분할: '#'으로 시작하는 헤더 기준",
-            "Page Splitter": "page라는 글자 앞을 기준으로 잡음"
+            "Custom Splitter": "사용자가 입력한 문자열 앞에서 분할"
         }
-        st.markdown(f"**선택된 Splitter :**  {splitter_option} - {splitter_descriptions.get(splitter_option, '')}")
+        st.markdown(f"**선택된 Splitter :** {splitter_option} - {splitter_descriptions.get(splitter_option, '')}")
     else:
-        st.markdown("**선택된 Splitter :**  None (분할하지 않고 Loader 결과만 표시)")
+        st.markdown("**선택된 Splitter :** None (분할하지 않고 Loader 결과만 표시)")
     st.markdown("---")
-
+    
+    # 만약 Custom Splitter가 선택되면, 사용자로부터 분할 기준 문자열을 입력받음
+    custom_keyword = ""
+    if splitter_option == "Custom Splitter":
+        custom_keyword = st.text_input("분할 기준 문자열 입력 (예: Chapter, Section 등)", value="")
+    
     # Start 버튼
     if st.button("Start"):
         if pdf_file is None:
@@ -163,7 +167,7 @@ def main():
         # 임시 파일로 저장
         temp_path = None
         with open("temp.pdf", "wb") as tmp:
-            # pdf_file이 getbuffer()를 지원하면 사용하고, 그렇지 않으면 read()를 사용합니다.
+            # pdf_file이 getbuffer()를 지원하면 사용하고, 그렇지 않으면 read() 사용
             if hasattr(pdf_file, "getbuffer"):
                 tmp.write(pdf_file.getbuffer())
             else:
@@ -218,10 +222,15 @@ def main():
             elif splitter_option == "MarkdownHeaderTextSplitter":
                 text_splitter = MarkdownHeaderTextSplitter()
                 splitted_list = text_splitter.split_text(text)
-            elif splitter_option == "Page Splitter":
-                
-                text_splitter = PageSplitter()
-                splitted_list = text_splitter.split_text(text)
+            elif splitter_option == "Custom Splitter":
+                # 사용자가 입력한 분할 기준 문자열이 없으면 경고 후 원본 텍스트 반환
+                if not custom_keyword:
+                    st.warning("Custom Splitter를 사용하려면 분할 기준 문자열을 입력하세요.")
+                    splitted_list = [text]
+                else:
+                    text_splitter = CustomSplitter(custom_keyword)
+                    splitted_list = text_splitter.split_text(text)
+            
             md_result = ""
             for chunk in splitted_list:
                 md_result += chunk + "\n---\n"
@@ -249,7 +258,7 @@ def main():
                     file_name=st.session_state["xlsx_file_name"],
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-            st.dataframe(df,width=10000, height=1000)
+            st.dataframe(df, width=10000, height=1000)
         with tabs[1]:
             st.markdown("#### Markdown View")
             st.download_button(

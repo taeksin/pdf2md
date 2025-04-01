@@ -1,0 +1,12 @@
+flask
+PyMuPDF
+pymupdf4llm
+llama-index
+pdfplumber
+pytesseract 
+pillow
+python-docx 
+rapidfuzz
+PyPDF2
+streamlit
+openpyxl

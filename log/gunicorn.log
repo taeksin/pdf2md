@@ -1,0 +1,1213 @@
+[2025-03-28 12:27:45 +0900] [25606] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8021']
+  backlog: 2048
+  workers: 4
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 1000
+  max_requests_jitter: 50
+  timeout: 30
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /home/dartusr/pdf2md
+  daemon: True
+  raw_env: []
+  pidfile: /home/dartusr/pdf2md/gunicorn.pid
+  worker_tmp_dir: None
+  user: 1004
+  group: 1004
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: None
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: /home/dartusr/pdf2md/log/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: udp://localhost:514
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: pdf2md:app
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x7eff6fa61c10>
+  on_reload: <function OnReload.on_reload at 0x7eff6fa61d30>
+  when_ready: <function WhenReady.when_ready at 0x7eff6fa61e50>
+  pre_fork: <function Prefork.pre_fork at 0x7eff6fa61f70>
+  post_fork: <function Postfork.post_fork at 0x7eff703ff0d0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x7eff703ff1f0>
+  worker_int: <function WorkerInt.worker_int at 0x7eff703ff310>
+  worker_abort: <function WorkerAbort.worker_abort at 0x7eff703ff430>
+  pre_exec: <function PreExec.pre_exec at 0x7eff703ff550>
+  pre_request: <function PreRequest.pre_request at 0x7eff703ff670>
+  post_request: <function PostRequest.post_request at 0x7eff703ff700>
+  child_exit: <function ChildExit.child_exit at 0x7eff703ff820>
+  worker_exit: <function WorkerExit.worker_exit at 0x7eff703ff940>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x7eff703ffa60>
+  on_exit: <function OnExit.on_exit at 0x7eff703ffb80>
+  ssl_context: <function NewSSLContext.ssl_context at 0x7eff703ffca0>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-03-28 12:27:45 +0900] [25606] [INFO] Starting gunicorn 23.0.0
+[2025-03-28 12:27:45 +0900] [25606] [DEBUG] Arbiter booted
+[2025-03-28 12:27:45 +0900] [25606] [INFO] Listening at: http://0.0.0.0:8021 (25606)
+[2025-03-28 12:27:45 +0900] [25606] [INFO] Using worker: sync
+[2025-03-28 12:27:45 +0900] [25607] [INFO] Booting worker with pid: 25607
+[2025-03-28 12:27:45 +0900] [25607] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 1, in <module>
+    from fastapi import FastAPI, UploadFile, File, HTTPException
+ModuleNotFoundError: No module named 'fastapi'
+[2025-03-28 12:27:45 +0900] [25607] [INFO] Worker exiting (pid: 25607)
+[2025-03-28 12:27:45 +0900] [25606] [ERROR] Worker (pid:25607) exited with code 3
+[2025-03-28 12:27:45 +0900] [25606] [ERROR] Shutting down: Master
+[2025-03-28 12:27:45 +0900] [25606] [ERROR] Reason: Worker failed to boot.
+[2025-03-28 12:32:15 +0900] [26181] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8021']
+  backlog: 2048
+  workers: 4
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 30
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /home/dartusr/pdf2md
+  daemon: True
+  raw_env: []
+  pidfile: /home/dartusr/pdf2md/gunicorn.pid
+  worker_tmp_dir: None
+  user: 1004
+  group: 1004
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: None
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: /home/dartusr/pdf2md/log/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: udp://localhost:514
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: pdf2md:app
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x7f2e2873fc10>
+  on_reload: <function OnReload.on_reload at 0x7f2e2873fd30>
+  when_ready: <function WhenReady.when_ready at 0x7f2e2873fe50>
+  pre_fork: <function Prefork.pre_fork at 0x7f2e2873ff70>
+  post_fork: <function Postfork.post_fork at 0x7f2e290dd0d0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x7f2e290dd1f0>
+  worker_int: <function WorkerInt.worker_int at 0x7f2e290dd310>
+  worker_abort: <function WorkerAbort.worker_abort at 0x7f2e290dd430>
+  pre_exec: <function PreExec.pre_exec at 0x7f2e290dd550>
+  pre_request: <function PreRequest.pre_request at 0x7f2e290dd670>
+  post_request: <function PostRequest.post_request at 0x7f2e290dd700>
+  child_exit: <function ChildExit.child_exit at 0x7f2e290dd820>
+  worker_exit: <function WorkerExit.worker_exit at 0x7f2e290dd940>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x7f2e290dda60>
+  on_exit: <function OnExit.on_exit at 0x7f2e290ddb80>
+  ssl_context: <function NewSSLContext.ssl_context at 0x7f2e290ddca0>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-03-28 12:32:15 +0900] [26181] [INFO] Starting gunicorn 23.0.0
+[2025-03-28 12:32:15 +0900] [26181] [DEBUG] Arbiter booted
+[2025-03-28 12:32:15 +0900] [26181] [INFO] Listening at: http://0.0.0.0:8021 (26181)
+[2025-03-28 12:32:15 +0900] [26181] [INFO] Using worker: sync
+[2025-03-28 12:32:15 +0900] [26182] [INFO] Booting worker with pid: 26182
+[2025-03-28 12:32:15 +0900] [26183] [INFO] Booting worker with pid: 26183
+[2025-03-28 12:32:15 +0900] [26184] [INFO] Booting worker with pid: 26184
+[2025-03-28 12:32:15 +0900] [26185] [INFO] Booting worker with pid: 26185
+[2025-03-28 12:32:16 +0900] [26181] [DEBUG] 4 workers
+[2025-03-28 12:32:16 +0900] [26183] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:32:16 +0900] [26183] [INFO] Worker exiting (pid: 26183)
+[2025-03-28 12:32:16 +0900] [26182] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:32:16 +0900] [26182] [INFO] Worker exiting (pid: 26182)
+[2025-03-28 12:32:16 +0900] [26184] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:32:16 +0900] [26184] [INFO] Worker exiting (pid: 26184)
+[2025-03-28 12:32:17 +0900] [26185] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:32:17 +0900] [26185] [INFO] Worker exiting (pid: 26185)
+[2025-03-28 12:32:17 +0900] [26181] [ERROR] Worker (pid:26183) exited with code 3
+[2025-03-28 12:32:17 +0900] [26181] [ERROR] Worker (pid:26184) was sent SIGTERM!
+[2025-03-28 12:32:17 +0900] [26181] [ERROR] Worker (pid:26182) was sent SIGTERM!
+[2025-03-28 12:32:17 +0900] [26181] [ERROR] Worker (pid:26185) was sent SIGTERM!
+[2025-03-28 12:32:17 +0900] [26181] [ERROR] Shutting down: Master
+[2025-03-28 12:32:17 +0900] [26181] [ERROR] Reason: Worker failed to boot.
+[2025-03-28 12:33:03 +0900] [26468] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8021']
+  backlog: 2048
+  workers: 4
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 1000
+  max_requests_jitter: 50
+  timeout: 30
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /home/dartusr/pdf2md
+  daemon: True
+  raw_env: []
+  pidfile: /home/dartusr/pdf2md/gunicorn.pid
+  worker_tmp_dir: None
+  user: 1004
+  group: 1004
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: None
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: /home/dartusr/pdf2md/log/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: udp://localhost:514
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: pdf2md:app
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x7f0f8b2ebc10>
+  on_reload: <function OnReload.on_reload at 0x7f0f8b2ebd30>
+  when_ready: <function WhenReady.when_ready at 0x7f0f8b2ebe50>
+  pre_fork: <function Prefork.pre_fork at 0x7f0f8b2ebf70>
+  post_fork: <function Postfork.post_fork at 0x7f0f8bc890d0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x7f0f8bc891f0>
+  worker_int: <function WorkerInt.worker_int at 0x7f0f8bc89310>
+  worker_abort: <function WorkerAbort.worker_abort at 0x7f0f8bc89430>
+  pre_exec: <function PreExec.pre_exec at 0x7f0f8bc89550>
+  pre_request: <function PreRequest.pre_request at 0x7f0f8bc89670>
+  post_request: <function PostRequest.post_request at 0x7f0f8bc89700>
+  child_exit: <function ChildExit.child_exit at 0x7f0f8bc89820>
+  worker_exit: <function WorkerExit.worker_exit at 0x7f0f8bc89940>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x7f0f8bc89a60>
+  on_exit: <function OnExit.on_exit at 0x7f0f8bc89b80>
+  ssl_context: <function NewSSLContext.ssl_context at 0x7f0f8bc89ca0>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-03-28 12:33:03 +0900] [26468] [INFO] Starting gunicorn 23.0.0
+[2025-03-28 12:33:03 +0900] [26468] [DEBUG] Arbiter booted
+[2025-03-28 12:33:03 +0900] [26468] [INFO] Listening at: http://0.0.0.0:8021 (26468)
+[2025-03-28 12:33:03 +0900] [26468] [INFO] Using worker: sync
+[2025-03-28 12:33:03 +0900] [26469] [INFO] Booting worker with pid: 26469
+[2025-03-28 12:33:03 +0900] [26470] [INFO] Booting worker with pid: 26470
+[2025-03-28 12:33:03 +0900] [26471] [INFO] Booting worker with pid: 26471
+[2025-03-28 12:33:04 +0900] [26472] [INFO] Booting worker with pid: 26472
+[2025-03-28 12:33:04 +0900] [26468] [DEBUG] 4 workers
+[2025-03-28 12:33:04 +0900] [26470] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:33:04 +0900] [26470] [INFO] Worker exiting (pid: 26470)
+[2025-03-28 12:33:04 +0900] [26469] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:33:04 +0900] [26469] [INFO] Worker exiting (pid: 26469)
+[2025-03-28 12:33:05 +0900] [26468] [ERROR] Worker (pid:26470) exited with code 3
+[2025-03-28 12:33:05 +0900] [26468] [ERROR] Worker (pid:26469) was sent SIGTERM!
+[2025-03-28 12:33:05 +0900] [26471] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:33:05 +0900] [26471] [INFO] Worker exiting (pid: 26471)
+[2025-03-28 12:33:05 +0900] [26472] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:33:05 +0900] [26472] [INFO] Worker exiting (pid: 26472)
+[2025-03-28 12:33:05 +0900] [26468] [ERROR] Worker (pid:26472) exited with code 3
+[2025-03-28 12:33:05 +0900] [26468] [ERROR] Worker (pid:26471) exited with code 3
+[2025-03-28 12:34:03 +0900] [26667] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8021']
+  backlog: 2048
+  workers: 4
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 1000
+  max_requests_jitter: 50
+  timeout: 30
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /home/dartusr/pdf2md
+  daemon: True
+  raw_env: []
+  pidfile: /home/dartusr/pdf2md/gunicorn.pid
+  worker_tmp_dir: None
+  user: 1004
+  group: 1004
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: None
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: /home/dartusr/pdf2md/log/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: udp://localhost:514
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: pdf2md:app
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x7faeacb2fc10>
+  on_reload: <function OnReload.on_reload at 0x7faeacb2fd30>
+  when_ready: <function WhenReady.when_ready at 0x7faeacb2fe50>
+  pre_fork: <function Prefork.pre_fork at 0x7faeacb2ff70>
+  post_fork: <function Postfork.post_fork at 0x7faeacb430d0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x7faeacb431f0>
+  worker_int: <function WorkerInt.worker_int at 0x7faeacb43310>
+  worker_abort: <function WorkerAbort.worker_abort at 0x7faeacb43430>
+  pre_exec: <function PreExec.pre_exec at 0x7faeacb43550>
+  pre_request: <function PreRequest.pre_request at 0x7faeacb43670>
+  post_request: <function PostRequest.post_request at 0x7faeacb43700>
+  child_exit: <function ChildExit.child_exit at 0x7faeacb43820>
+  worker_exit: <function WorkerExit.worker_exit at 0x7faeacb43940>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x7faeacb43a60>
+  on_exit: <function OnExit.on_exit at 0x7faeacb43b80>
+  ssl_context: <function NewSSLContext.ssl_context at 0x7faeacb43ca0>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-03-28 12:34:03 +0900] [26667] [INFO] Starting gunicorn 23.0.0
+[2025-03-28 12:34:03 +0900] [26667] [DEBUG] Arbiter booted
+[2025-03-28 12:34:03 +0900] [26667] [INFO] Listening at: http://0.0.0.0:8021 (26667)
+[2025-03-28 12:34:03 +0900] [26667] [INFO] Using worker: sync
+[2025-03-28 12:34:03 +0900] [26668] [INFO] Booting worker with pid: 26668
+[2025-03-28 12:34:03 +0900] [26669] [INFO] Booting worker with pid: 26669
+[2025-03-28 12:34:03 +0900] [26670] [INFO] Booting worker with pid: 26670
+[2025-03-28 12:34:03 +0900] [26671] [INFO] Booting worker with pid: 26671
+[2025-03-28 12:34:03 +0900] [26667] [DEBUG] 4 workers
+[2025-03-28 12:34:04 +0900] [26668] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:34:04 +0900] [26668] [INFO] Worker exiting (pid: 26668)
+[2025-03-28 12:34:04 +0900] [26667] [ERROR] Worker (pid:26668) exited with code 3
+[2025-03-28 12:34:04 +0900] [26669] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:34:04 +0900] [26669] [INFO] Worker exiting (pid: 26669)
+[2025-03-28 12:34:04 +0900] [26670] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:34:04 +0900] [26670] [INFO] Worker exiting (pid: 26670)
+[2025-03-28 12:34:04 +0900] [26667] [ERROR] Worker (pid:26669) exited with code 3
+[2025-03-28 12:34:04 +0900] [26671] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/home/dartusr/anaconda3/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/home/dartusr/pdf2md/pdf2md.py", line 348, in <module>
+    async def convert_file_to_markdown(file: UploadFile = File(...)):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 994, in decorator
+    self.add_api_route(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 933, in add_api_route
+    route = route_class(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/routing.py", line 554, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 285, in get_dependant
+    param_details = analyze_param(
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 482, in analyze_param
+    ensure_multipart_is_installed()
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/fastapi/dependencies/utils.py", line 115, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+[2025-03-28 12:34:04 +0900] [26671] [INFO] Worker exiting (pid: 26671)
+[2025-03-28 12:34:54 +0900] [26882] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8021']
+  backlog: 2048
+  workers: 4
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 1000
+  max_requests_jitter: 50
+  timeout: 30
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /home/dartusr/pdf2md
+  daemon: True
+  raw_env: []
+  pidfile: /home/dartusr/pdf2md/gunicorn.pid
+  worker_tmp_dir: None
+  user: 1004
+  group: 1004
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: None
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: /home/dartusr/pdf2md/log/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: udp://localhost:514
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: pdf2md:app
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x7f1e00e54c10>
+  on_reload: <function OnReload.on_reload at 0x7f1e00e54d30>
+  when_ready: <function WhenReady.when_ready at 0x7f1e00e54e50>
+  pre_fork: <function Prefork.pre_fork at 0x7f1e00e54f70>
+  post_fork: <function Postfork.post_fork at 0x7f1e00e680d0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x7f1e00e681f0>
+  worker_int: <function WorkerInt.worker_int at 0x7f1e00e68310>
+  worker_abort: <function WorkerAbort.worker_abort at 0x7f1e00e68430>
+  pre_exec: <function PreExec.pre_exec at 0x7f1e00e68550>
+  pre_request: <function PreRequest.pre_request at 0x7f1e00e68670>
+  post_request: <function PostRequest.post_request at 0x7f1e00e68700>
+  child_exit: <function ChildExit.child_exit at 0x7f1e00e68820>
+  worker_exit: <function WorkerExit.worker_exit at 0x7f1e00e68940>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x7f1e00e68a60>
+  on_exit: <function OnExit.on_exit at 0x7f1e00e68b80>
+  ssl_context: <function NewSSLContext.ssl_context at 0x7f1e00e68ca0>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-03-28 12:34:54 +0900] [26882] [INFO] Starting gunicorn 23.0.0
+[2025-03-28 12:34:54 +0900] [26882] [DEBUG] Arbiter booted
+[2025-03-28 12:34:54 +0900] [26882] [INFO] Listening at: http://0.0.0.0:8021 (26882)
+[2025-03-28 12:34:54 +0900] [26882] [INFO] Using worker: sync
+[2025-03-28 12:34:54 +0900] [26884] [INFO] Booting worker with pid: 26884
+[2025-03-28 12:34:54 +0900] [26885] [INFO] Booting worker with pid: 26885
+[2025-03-28 12:34:54 +0900] [26886] [INFO] Booting worker with pid: 26886
+[2025-03-28 12:34:54 +0900] [26887] [INFO] Booting worker with pid: 26887
+[2025-03-28 12:34:54 +0900] [26882] [DEBUG] 4 workers
+[2025-03-28 12:35:04 +0900] [26885] [DEBUG] POST /convert
+[2025-03-28 12:35:04 +0900] [26885] [ERROR] Error handling request /convert
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/sync.py", line 134, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/sync.py", line 177, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+TypeError: __call__() missing 1 required positional argument: 'send'
+[2025-03-28 12:36:49 +0900] [26882] [INFO] Handling signal: term
+[2025-03-28 12:36:49 +0900] [26885] [INFO] Worker exiting (pid: 26885)
+[2025-03-28 12:36:49 +0900] [26884] [INFO] Worker exiting (pid: 26884)
+[2025-03-28 12:36:49 +0900] [26887] [INFO] Worker exiting (pid: 26887)
+[2025-03-28 12:36:49 +0900] [26886] [INFO] Worker exiting (pid: 26886)
+[2025-03-28 12:36:49 +0900] [26882] [INFO] Shutting down: Master
+[2025-03-28 12:38:07 +0900] [27231] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8021']
+  backlog: 2048
+  workers: 4
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 1000
+  max_requests_jitter: 50
+  timeout: 30
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /home/dartusr/pdf2md
+  daemon: True
+  raw_env: []
+  pidfile: /home/dartusr/pdf2md/gunicorn.pid
+  worker_tmp_dir: None
+  user: 1004
+  group: 1004
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: None
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: /home/dartusr/pdf2md/log/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: udp://localhost:514
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: pdf2md:app
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x7fb2497a2c10>
+  on_reload: <function OnReload.on_reload at 0x7fb2497a2d30>
+  when_ready: <function WhenReady.when_ready at 0x7fb2497a2e50>
+  pre_fork: <function Prefork.pre_fork at 0x7fb2497a2f70>
+  post_fork: <function Postfork.post_fork at 0x7fb24a1400d0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x7fb24a1401f0>
+  worker_int: <function WorkerInt.worker_int at 0x7fb24a140310>
+  worker_abort: <function WorkerAbort.worker_abort at 0x7fb24a140430>
+  pre_exec: <function PreExec.pre_exec at 0x7fb24a140550>
+  pre_request: <function PreRequest.pre_request at 0x7fb24a140670>
+  post_request: <function PostRequest.post_request at 0x7fb24a140700>
+  child_exit: <function ChildExit.child_exit at 0x7fb24a140820>
+  worker_exit: <function WorkerExit.worker_exit at 0x7fb24a140940>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x7fb24a140a60>
+  on_exit: <function OnExit.on_exit at 0x7fb24a140b80>
+  ssl_context: <function NewSSLContext.ssl_context at 0x7fb24a140ca0>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-03-28 12:38:07 +0900] [27231] [INFO] Starting gunicorn 23.0.0
+[2025-03-28 12:38:07 +0900] [27231] [DEBUG] Arbiter booted
+[2025-03-28 12:38:07 +0900] [27231] [INFO] Listening at: http://0.0.0.0:8021 (27231)
+[2025-03-28 12:38:07 +0900] [27231] [INFO] Using worker: sync
+[2025-03-28 12:38:07 +0900] [27232] [INFO] Booting worker with pid: 27232
+[2025-03-28 12:38:07 +0900] [27233] [INFO] Booting worker with pid: 27233
+[2025-03-28 12:38:07 +0900] [27234] [INFO] Booting worker with pid: 27234
+[2025-03-28 12:38:07 +0900] [27235] [INFO] Booting worker with pid: 27235
+[2025-03-28 12:38:07 +0900] [27231] [DEBUG] 4 workers
+[2025-03-28 12:38:31 +0900] [27235] [DEBUG] POST /convert
+[2025-03-28 12:38:31 +0900] [27235] [ERROR] Error handling request /convert
+Traceback (most recent call last):
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/sync.py", line 134, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/home/dartusr/anaconda3/lib/python3.9/site-packages/gunicorn/workers/sync.py", line 177, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+TypeError: __call__() missing 1 required positional argument: 'send'
+[2025-03-28 12:39:00 +0900] [27231] [INFO] Handling signal: term
+[2025-03-28 12:39:00 +0900] [27232] [INFO] Worker exiting (pid: 27232)
+[2025-03-28 12:39:00 +0900] [27234] [INFO] Worker exiting (pid: 27234)
+[2025-03-28 12:39:00 +0900] [27235] [INFO] Worker exiting (pid: 27235)
+[2025-03-28 12:39:00 +0900] [27233] [INFO] Worker exiting (pid: 27233)
+[2025-03-28 12:39:00 +0900] [27231] [INFO] Shutting down: Master

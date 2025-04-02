@@ -4,7 +4,7 @@ import re
 import pandas as pd
 import io
 from PyPDF2 import PdfReader
-from pdf2md import extract_combined_markdown
+from pdf2md import process_pdf_to_markdown
 
 # ---------------------------------------------------------------------------
 # splitter 폴더 내 각 스플리터 모듈 import
@@ -37,6 +37,30 @@ if "xlsx_file_name" not in st.session_state:
     st.session_state["xlsx_file_name"] = ""
 if "md_file_name" not in st.session_state:
     st.session_state["md_file_name"] = ""
+
+# =============================================================================
+# Markdown 포맷팅 함수
+# =============================================================================
+def format_text_to_markdown(text: str) -> str:
+    """
+    각 줄을 검사하여,
+    - 만약 줄 전체가 '---'라면 앞뒤에 개행 문자를 추가합니다.
+    - 빈 줄이 아니면 줄 끝에 공백 두 칸을 추가하여 Markdown 강제 줄바꿈을 적용합니다.
+    - 예) "| --- |" 등 표 구분자에는 영향을 주지 않습니다.
+    """
+    lines = text.splitlines()
+    formatted_lines = []
+    for line in lines:
+        # 줄 전체가 정확히 '---'인 경우
+        if line.strip() == '---':
+            formatted_lines.append("\n---\n")
+        else:
+            # 빈 줄이 아니면 줄 끝에 공백 두 칸 추가
+            if line.strip():
+                formatted_lines.append(line.rstrip() + "  ")
+            else:
+                formatted_lines.append("")
+    return "\n".join(formatted_lines)
 
 # =============================================================================
 # 메인 Streamlit UI 함수
@@ -167,7 +191,6 @@ def main():
         # 임시 파일로 저장
         temp_path = None
         with open("temp.pdf", "wb") as tmp:
-            # pdf_file이 getbuffer()를 지원하면 사용하고, 그렇지 않으면 read() 사용
             if hasattr(pdf_file, "getbuffer"):
                 tmp.write(pdf_file.getbuffer())
             else:
@@ -176,7 +199,9 @@ def main():
 
         # Loader 처리
         if loader_option == "PDF2MD":
-            text = extract_combined_markdown(temp_path)
+            # process_pdf_to_markdown로 PDF를 Markdown으로 변환 후, 형식 적용
+            text = process_pdf_to_markdown(temp_path)
+            text = format_text_to_markdown(text)
         elif loader_option == "PyPDF2":
             text = load_pdf_pypdf2(temp_path)
         elif loader_option == "PDFPlumber":
@@ -223,7 +248,6 @@ def main():
                 text_splitter = MarkdownHeaderTextSplitter()
                 splitted_list = text_splitter.split_text(text)
             elif splitter_option == "Custom Splitter":
-                # 사용자가 입력한 분할 기준 문자열이 없으면 경고 후 원본 텍스트 반환
                 if not custom_keyword:
                     st.warning("Custom Splitter를 사용하려면 분할 기준 문자열을 입력하세요.")
                     splitted_list = [text]
@@ -258,7 +282,7 @@ def main():
                     file_name=st.session_state["xlsx_file_name"],
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-            st.dataframe(df, width=10000, height=1000)
+            st.dataframe(df, width=10000, height=1200)
         with tabs[1]:
             st.markdown("#### Markdown View")
             st.download_button(
@@ -270,9 +294,7 @@ def main():
             st.markdown(st.session_state["result_md"])
         with tabs[2]:
             st.markdown("#### Text View")
-            # 분할된 리스트를 단순 텍스트로 결합
             text_result = "\n".join(st.session_state["splitted_list"])
-            # 기존 md_file_name에서 확장자만 txt로 변경하여 사용 (없으면 기본 파일명 사용)
             txt_file_name = st.session_state["md_file_name"].replace(".md", ".txt") if st.session_state["md_file_name"] else "result.txt"
             st.download_button(
                 label="Download Text",
@@ -280,7 +302,7 @@ def main():
                 file_name=txt_file_name,
                 mime="text/plain"
             )
-            st.text_area("Text", text_result, height=600)
+            st.text_area("Text", text_result, height=1200)
 
 if __name__ == "__main__":
     main()

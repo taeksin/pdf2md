@@ -1,18 +1,8 @@
 from flask import Flask, request, jsonify
-import os
-import re
-import tempfile
-import io
-from collections import defaultdict
-from functools import lru_cache
-
 import pdfplumber
-import fitz  # PyMuPDF
-import pytesseract
-from PIL import Image
-from pymupdf4llm import LlamaMarkdownReader
-from docx import Document
-from rapidfuzz import fuzz  # difflib 대체
+import io
+import re
+import logging
 
 app = Flask(__name__)
 
@@ -20,473 +10,334 @@ app = Flask(__name__)
 # 상수 및 사전 컴파일된 정규표현식
 ###############################
 
-FOOTER_PATTERN = re.compile(r"^Page\s*\d+(\s*(of|/)\s*\d+)?\s*$", re.IGNORECASE)
-TOLERANCE = 2.0  # 클러스터링 및 좌표 비교에 사용
-MARGIN = 20      # 테이블 영역 여유 margin
+# 헤더/푸터 제거 비율 (페이지 높이의 비율)
+HEADER_HEIGHT_RATIO = 0.1  # 상단 10%
+FOOTER_HEIGHT_RATIO = 0.1  # 하단 10%
+
+# 기본 설정: 로그 레벨과 출력 포맷 설정
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 ###############################
-# PDF 처리 관련 함수
+# PDF -> Markdown 변환 함수들
 ###############################
+def convert_table_to_markdown(table_data):
+    """
+    추출한 표 데이터를 Markdown 형식의 테이블 문자열로 변환합니다.
+    첫 행은 헤더로, 나머지 행은 데이터로 처리합니다.
+    """
+    if not table_data:
+        return ""
+    md_lines = []
+    header = table_data[0]
+    md_lines.append("| " + " | ".join(header) + " |")
+    md_lines.append("| " + " | ".join(["---"] * len(header)) + " |")
+    for row in table_data[1:]:
+        md_lines.append("| " + " | ".join(row) + " |")
+    return "\n".join(md_lines)
 
-def estimate_font_weight(text):
+def group_words_to_lines(words, threshold=3):
     """
-    텍스트의 폰트 굵기를 추정합니다.
-    대문자와 공백만 있으면 bold로 간주합니다.
+    pdfplumber의 extract_words() 결과를 기준으로 y 좌표가 가까운 단어들을
+    하나의 라인으로 그룹화합니다.
     """
-    if re.match(r"^[A-Z\s]+$", text.strip()):
-        return "bold"
-    return "normal"
+    if not words:
+        return []
+    words = sorted(words, key=lambda w: w["top"])
+    lines = []
+    current_line = []
+    current_top = words[0]["top"]
 
-def cluster_positions(positions, tolerance=TOLERANCE):
-    """
-    주어진 위치 값들을 tolerance 범위 내에서 클러스터링하여 클러스터 중심값 리스트를 반환합니다.
-    """
-    clusters = []
-    for pos in sorted(positions):
-        found = False
-        for cluster in clusters:
-            if abs(cluster[0] - pos) <= tolerance:
-                cluster[0] = (cluster[0] * cluster[1] + pos) / (cluster[1] + 1)
-                cluster[1] += 1
-                found = True
-                break
-        if not found:
-            clusters.append([pos, 1])
-    return [cluster[0] for cluster in clusters]
-
-def detect_common_y_positions(documents, page_count, tolerance=TOLERANCE, threshold=0.8):
-    """
-    여러 페이지에서 y 좌표들이 군집화되어 반복된다면 해당 클러스터 중심값을 반환합니다.
-    """
-    y_positions = []
-    page_occurrences = defaultdict(set)
-    for doc in documents:
-        page = doc.metadata.get("page_number", 0)
-        y = doc.metadata.get("bbox", [0, 0, 0, 0])[1]
-        y_positions.append(y)
-        page_occurrences[y].add(page)
-    clusters = cluster_positions(y_positions, tolerance)
-    common_y = set()
-    for cluster in clusters:
-        count = 0
-        for y, pages in page_occurrences.items():
-            if abs(y - cluster) <= tolerance:
-                count += len(pages)
-        if count >= page_count * threshold:
-            common_y.add(round(cluster, 1))
-    return common_y
-
-def detect_repeated_footer_positions(pdf_doc, documents, tolerance=TOLERANCE, threshold=0.8, bottom_ratio=0.9):
-    """
-    각 페이지 하단의 텍스트 y 좌표를 군집화하여, 반복되는 footer 영역의 y 좌표 집합을 반환합니다.
-    pdf_doc은 fitz.open으로 연 PDF 문서 객체입니다.
-    """
-    page_count = pdf_doc.page_count
-    y_positions = []
-    page_occurrences = defaultdict(set)
-    for doc_item in documents:
-        page_num = doc_item.metadata.get("page_number", 0)
-        page_idx = page_num - 1
-        if page_idx < 0 or page_idx >= page_count:
-            continue
-        page_height = pdf_doc[page_idx].rect.height
-        y_top = doc_item.metadata.get("bbox", [0, 0, 0, 0])[1]
-        if y_top >= page_height * bottom_ratio:
-            y_positions.append(y_top)
-            page_occurrences[y_top].add(page_num)
-    clusters = cluster_positions(y_positions, tolerance)
-    common_y = set()
-    for cluster in clusters:
-        count = 0
-        for y, pages in page_occurrences.items():
-            if abs(y - cluster) <= tolerance:
-                count += len(pages)
-        if count >= page_count * threshold:
-            common_y.add(round(cluster, 1))
-    return common_y
-
-def extract_text_by_page_with_llama(pdf_path):
-    """
-    LlamaMarkdownReader를 사용하여 PDF의 텍스트와 메타정보를 추출합니다.
-    반복되는 Header/Footer 영역은 제거하며, font 정보가 있으면 Bold 여부를 확인하고,
-    없으면 estimate_font_weight로 처리합니다.
-    PDF 파일은 fitz를 이용해 한 번만 열어 I/O를 최소화합니다.
-    """
-    reader = LlamaMarkdownReader()
-    documents = reader.load_data(pdf_path)
-    page_count = max(doc.metadata.get("page_number", 0) for doc in documents)
-    common_y_positions = detect_common_y_positions(documents, page_count)
-    
-    with fitz.open(pdf_path) as pdf_doc:
-        repeated_footers = detect_repeated_footer_positions(pdf_doc, documents)
-    
-    remove_y_positions = common_y_positions.union(repeated_footers)
-
-    page_items = defaultdict(list)
-    for doc_item in documents:
-        page_num = doc_item.metadata.get("page_number", 0)
-        bbox = doc_item.metadata.get("bbox", [0, 0, 0, 0])
-        y_top = round(bbox[1], 1)
-        if any(abs(y_top - pos) < TOLERANCE for pos in remove_y_positions):
-            continue
-
-        color = doc_item.metadata.get("font_color", "#000000")
-        bgcolor = doc_item.metadata.get("bg_color", "#FFFFFF")
-        font_size = bbox[3] - bbox[1]
-        link = doc_item.metadata.get("uri", None)
-        content = doc_item.text.strip()
-        if link:
-            content = f"[{content}]({link})"
-        
-        if "font" in doc_item.metadata:
-            font = doc_item.metadata["font"]
-            font_weight = "bold" if "Bold" in font else "normal"
+    for word in words:
+        if abs(word["top"] - current_top) <= threshold:
+            current_line.append(word)
         else:
-            font_weight = estimate_font_weight(doc_item.text)
+            current_line = sorted(current_line, key=lambda w: w["x0"])
+            line_text = " ".join(w["text"] for w in current_line)
+            lines.append((current_top, line_text))
+            current_line = [word]
+            current_top = word["top"]
+    if current_line:
+        current_line = sorted(current_line, key=lambda w: w["x0"])
+        line_text = " ".join(w["text"] for w in current_line)
+        lines.append((current_top, line_text))
+    return lines
+
+def is_inside_bbox(x, y, bbox):
+    """
+    (x, y)가 bbox (x0, top, x1, bottom) 내부에 있는지 확인합니다.
+    """
+    x0, top, x1, bottom = bbox
+    return (x0 <= x <= x1) and (top <= y <= bottom)
+
+def process_pdf_to_markdown(pdf_file):
+    """
+    PDF 파일의 각 페이지에서 헤더/푸터 영역을 제거한 후,
+    텍스트와 표 객체를 좌표 기반으로 추출하여 Markdown 형식 문자열로 변환합니다.
+    텍스트와 표가 혼합된 경우, 페이지 내에서 위쪽 좌표 기준 정렬을 하여 원본 순서를 최대한 재현합니다.
+    각 페이지의 내용은 구분자 '---'로 연결됩니다.
+    """
+    page_contents = []
+    with pdfplumber.open(pdf_file) as pdf:
+        for page in pdf.pages:
+            width, height = page.width, page.height
+            crop_top = height * HEADER_HEIGHT_RATIO
+            crop_bottom = height * (1 - FOOTER_HEIGHT_RATIO)
+            cropped_page = page.within_bbox((0, crop_top, width, crop_bottom))
             
-        item = {
-            "type": "text",
-            "content": content,
-            "x": bbox[0],
-            "y": bbox[1],
-            "font_size": font_size,
-            "font_weight": font_weight,
-            "font_color": color,
-            "bg_color": bgcolor
-        }
-        page_items[page_num].append(item)
-    return page_items
+            # 표 객체 추출 (좌표 정보 포함)
+            tables = []
+            for table in cropped_page.find_tables():
+                try:
+                    table_data = table.extract()
+                    if table_data:
+                        md_table = convert_table_to_markdown(table_data)
+                        tables.append({
+                            "type": "table",
+                            "y": table.bbox[1],
+                            "content": md_table,
+                            "bbox": table.bbox
+                        })
+                except Exception:
+                    continue
 
-def extract_text_from_pdfplumber_or_ocr(pdf_path):
-    """
-    pdfplumber로 텍스트를 추출하고, 텍스트가 없으면 pytesseract로 OCR 처리합니다.
-    PDF 파일을 fitz와 pdfplumber를 동시에 한 번만 열어 I/O 중복을 줄입니다.
-    """
-    with fitz.open(pdf_path) as doc, pdfplumber.open(pdf_path) as pdf:
-        results = defaultdict(list)
-        for page_index, page in enumerate(pdf.pages):
-            text = page.extract_text()
-            if text and text.strip():
-                results[page_index + 1].append({
-                    "type": "text",
-                    "content": text.strip(),
-                    "x": 0,
-                    "y": 0,  # fallback은 좌표 정보 없음
-                    "font_size": 12,
-                    "font_weight": "normal",
-                    "font_color": "#000000",
-                    "bg_color": "#FFFFFF"
-                })
-            else:
-                pix = doc.load_page(page_index).get_pixmap(dpi=300)
-                image = Image.open(io.BytesIO(pix.tobytes()))
-                ocr_text = pytesseract.image_to_string(image, lang='eng')
-                if ocr_text.strip():
-                    results[page_index + 1].append({
-                        "type": "text",
-                        "content": ocr_text.strip(),
-                        "x": 0,
-                        "y": 0,
-                        "font_size": 12,
-                        "font_weight": "normal",
-                        "font_color": "#000000",
-                        "bg_color": "#FFFFFF"
-                    })
-    return results
+            # 텍스트 객체 추출: extract_words()를 이용해 단어 단위 추출 후 라인별로 그룹화
+            words = cropped_page.extract_words()
+            filtered_words = []
+            for w in words:
+                cx = (float(w["x0"]) + float(w["x1"])) / 2
+                cy = (float(w["top"]) + float(w["bottom"])) / 2
+                inside_table = False
+                for t in tables:
+                    if is_inside_bbox(cx, cy, t["bbox"]):
+                        inside_table = True
+                        break
+                if not inside_table:
+                    filtered_words.append(w)
+            text_lines = group_words_to_lines(filtered_words)
+            text_objects = [{"type": "text", "y": y, "content": txt} for y, txt in text_lines]
 
-def convert_table_to_markdown(table):
-    """
-    2차원 배열 형태의 표 데이터를 Markdown 표 형식으로 변환합니다.
-    """
-    def format_cell(cell):
-        return cell.strip() if cell else ""
-    if not table or not table[0]:
-        return ""
-    header = "| " + " | ".join(format_cell(cell) for cell in table[0]) + " |"
-    separator = "| " + " | ".join(["---"] * len(table[0])) + " |"
-    rows = [
-        "| " + " | ".join(format_cell(cell) for cell in row) + " |"
-        for row in table[1:] if row
-    ]
-    return "\n".join([header, separator] + rows)
+            # 텍스트와 표를 y 좌표 기준으로 합쳐 원본 순서를 재현
+            all_objects = text_objects + tables
+            all_objects = sorted(all_objects, key=lambda obj: obj["y"])
+            page_lines = []
+            for obj in all_objects:
+                if obj["type"] == "text":
+                    page_lines.append(obj["content"])
+                elif obj["type"] == "table":
+                    page_lines.append("\n" + obj["content"] + "\n")
+            page_contents.append("\n".join(page_lines))
+    # 각 페이지를 '---' 구분자로 연결하여 반환
+    return "\n---\n".join(page_contents)
 
-def classify_heading(item):
+@app.route('/convert', methods=['POST'])
+def convert_pdf_endpoint():
     """
-    폰트 크기와 bold 여부에 따라 Markdown 헤더 또는 일반 텍스트로 변환합니다.
+    PDF 파일을 POST로 업로드하면, PDF의 텍스트와 표를 추출하여 Markdown 형식 문자열을
+    JSON으로 반환합니다. 페이지 구분자는 '---'입니다.
     """
-    size = item.get("font_size", 0)
-    bold = (item.get("font_weight", "normal") == "bold")
-    content = item['content'].strip()
-    font_color = item.get("font_color", "#000000")
-    bg_color = item.get("bg_color", "#FFFFFF")
-    highlight = (font_color.lower() not in ["#000000", "#000", "black"]) or (bg_color.lower() != "#ffffff")
-    style_prefix = "**" if (highlight or bold) else ""
-    styled_content = f"{style_prefix}{content}{style_prefix}"
+    if 'file' not in request.files:
+        return jsonify({"error": "파일이 제공되지 않았습니다."}), 400
     
-    if bold:
-        if size >= 24 or (size >= 20):
-            return f"# {styled_content}"
-        elif size >= 18:
-            return f"## {styled_content}"
-        else:
-            return f"### {styled_content}"
-    else:
-        if size >= 24:
-            return f"# {styled_content}"
-        elif size >= 20:
-            return f"## {styled_content}"
-        elif size >= 14:
-            return f"### {styled_content}"
-        else:
-            return styled_content
-
-def process_text_item(item):
-    """
-    텍스트 아이템 내에서 bold 상태이고 행 전체가 짧은 경우 소제목(헤더)로 처리합니다.
-    """
-    content = item["content"].strip()
-    if item.get("font_weight", "normal") == "bold":
-        lines = content.split("\n")
-        header_lines = []
-        body_lines = []
-        for line in lines:
-            stripped_line = line.strip()
-            if stripped_line and len(stripped_line) < 50:
-                header_lines.append(f"#### {stripped_line}")
-            else:
-                if stripped_line:
-                    body_lines.append(stripped_line)
-        if header_lines and body_lines:
-            return "\n".join(header_lines) + "\n\n" + "\n".join(body_lines)
-        elif header_lines:
-            return "\n".join(header_lines)
-        else:
-            return content
-    else:
-        paragraphs = re.split(r'\n\s*\n', content)
-        if not paragraphs:
-            return ""
-        first = paragraphs[0].strip()
-        if len(first) < 50:
-            header = classify_heading({**item, "content": first})
-            body = "\n\n".join(p.strip() for p in paragraphs[1:] if p.strip())
-            if body:
-                return header + "\n\n" + body
-            else:
-                return header
-        else:
-            return "\n\n".join(p.strip() for p in paragraphs if p.strip())
-
-@lru_cache(maxsize=1024)
-def normalize_string(s):
-    """
-    문자열의 불필요한 공백을 제거하여 정규화합니다.
-    """
-    return " ".join(s.split())
-
-def process_page(page, page_num, llama_text_items, fallback_text_items, fallback_freq, fallback_page_count):
-    """
-    한 페이지에 대해 텍스트와 표를 추출 및 처리하여 markdown 문자열을 반환합니다.
-    """
-    page_elements = []
-    element_order = 0
-
-    # 텍스트 아이템 선택: Llama 데이터 우선, 없으면 fallback 사용
-    if page_num in llama_text_items:
-        text_items = llama_text_items[page_num]
-    elif page_num in fallback_text_items:
-        text_items = fallback_text_items[page_num]
-    else:
-        text_items = []
-
-    # 표 추출
-    table_boxes = []
-    table_headers = []
-    table_texts = []
-    tables = page.find_tables()
-    for table in tables:
-        if not table:
-            continue
-        bbox = table.bbox  # [x0, y0, x1, y1]
-        table_boxes.append(bbox)
-        extracted_table = table.extract()
-        md_table = convert_table_to_markdown(extracted_table)
-        if extracted_table and len(extracted_table) > 0:
-            header_row = extracted_table[0]
-            header_text = " ".join(cell.strip() for cell in header_row if cell).strip()
-            table_headers.append(header_text)
-        table_content = "\n".join(" ".join(cell.strip() for cell in row if cell) for row in extracted_table)
-        table_texts.append(table_content)
-        element_order += 1
-        page_elements.append({
-            "type": "table",
-            "content": "\n" + md_table,
-            "x": bbox[0],
-            "y": bbox[1],
-            "order": element_order
-        })
-
-    # 미리 normalized 된 표 내용 캐싱
-    normalized_table_headers = [normalize_string(text) for text in table_headers]
-    normalized_table_texts = [normalize_string(text) for text in table_texts]
-
-    # 텍스트 아이템 필터링
-    filtered_text_items = []
-    for item in text_items:
-        element_order += 1
-        item["order"] = element_order
-        x, y = item.get("x", 0), item.get("y", 0)
-        content = item.get("content", "").strip()
-        norm_content = normalize_string(content)
-        
-        # 좌표 정보가 있는 경우: 테이블 영역 내에 있으면 제거
-        if x != 0 or y != 0:
-            inside_table = any(
-                bbox[0] - MARGIN <= x <= bbox[2] + MARGIN and
-                bbox[1] - MARGIN <= y <= bbox[3] + MARGIN
-                for bbox in table_boxes
-            )
-            if inside_table:
-                continue
-            # 텍스트가 표 내용과 정확히 동일하면 제거
-            if norm_content in normalized_table_headers or norm_content in normalized_table_texts:
-                continue
-            filtered_text_items.append(item)
-        else:
-            # fallback 텍스트: 페이지 내 반복(헤더/푸터) 및 유사도 검사
-            if fallback_page_count > 0 and fallback_freq[norm_content] / fallback_page_count >= 0.7:
-                continue
-            duplicate_found = False
-            for candidate in normalized_table_headers + normalized_table_texts:
-                # RapidFuzz를 사용하여 유사도 90 이상이면 중복으로 판단
-                if norm_content == candidate or fuzz.ratio(norm_content, candidate) >= 90:
-                    duplicate_found = True
-                    break
-            if duplicate_found:
-                continue
-            filtered_text_items.append(item)
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "선택된 파일이 없습니다."}), 400
     
-    # Footer 패턴에 해당하는 텍스트 제거
-    for item in filtered_text_items:
-        if FOOTER_PATTERN.match(item.get("content", "").strip()):
-            continue
-        page_elements.append(item)
-
-    # (y, x, order) 기준 정렬하여 원래 순서 재현
-    sorted_elements = sorted(page_elements, key=lambda e: (e.get("y", float('inf')), e.get("x", float('inf')), e.get("order", 0)))
-    page_section = []
-    for element in sorted_elements:
-        if element["type"] == "text":
-            page_section.append(process_text_item(element))
-        elif element["type"] == "table":
-            page_section.append(element["content"])
-    if page_section:
-        return "\n".join(page_section) + "\n---\n"
-    else:
-        return ""
-
-def extract_combined_markdown(pdf_path):
-    """
-    PDF 파일을 처리하여,
-      1) LlamaMarkdownReader로 텍스트 추출 (헤더/푸터 제거)
-      2) pdfplumber로 표 및 OCR 텍스트 추출
-      3) 표 영역 내에 위치한 텍스트와, 표 내용과 **정확히 동일하거나 매우 유사한**(유사도 90 이상) 텍스트 아이템은 제거하고,
-         fallback 텍스트에 대해 반복되는(Header/Footer로 추정) 항목도 제거합니다.
-      4) (y, x) 좌표와 생성 순서(order)를 기준으로 원래 순서를 재현합니다.
-    """
-    llama_text_items = extract_text_by_page_with_llama(pdf_path)
-    fallback_text_items = extract_text_from_pdfplumber_or_ocr(pdf_path)
-    
-    # fallback 텍스트의 normalized 내용 빈도 계산 (좌표가 (0,0)인 경우)
-    fallback_freq = defaultdict(int)
-    fallback_page_count = 0
-    for page, items in fallback_text_items.items():
-        if items:
-            fallback_page_count += 1
-        for item in items:
-            if item.get("x", 0) == 0 and item.get("y", 0) == 0:
-                norm = normalize_string(item.get("content", ""))
-                fallback_freq[norm] += 1
-
-    markdown_parts = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for i, page in enumerate(pdf.pages, start=1):
-            page_markdown = process_page(page, i, llama_text_items, fallback_text_items, fallback_freq, fallback_page_count)
-            if page_markdown:
-                markdown_parts.append(page_markdown)
-    return "\n".join(markdown_parts)
-
-###############################
-# Word 파일 처리 함수
-###############################
-
-def convert_docx_to_markdown(docx_path):
-    """
-    python-docx를 사용하여 Word(.docx) 파일의 단락과 표를 Markdown 형식으로 변환합니다.
-    단락의 스타일(Heading)과 bold 여부를 참고하여 제목(헤더) 처리를 합니다.
-    """
-    document = Document(docx_path)
-    markdown_lines = []
-    
-    for para in document.paragraphs:
-        text = para.text.strip()
-        if not text:
-            continue
-        if para.style.name.startswith("Heading"):
-            level = para.style.name.split()[-1] if para.style.name.split()[-1].isdigit() else 1
-            markdown_lines.append("#" * int(level) + " " + text)
-        else:
-            runs = [run for run in para.runs if run.text.strip()]
-            if runs and all(run.bold for run in runs if run.bold is not None):
-                markdown_lines.append("## " + para.text)
-            else:
-                markdown_lines.append(para.text)
-        markdown_lines.append("")
-    
-    for table in document.tables:
-        rows = []
-        for row in table.rows:
-            cells = [cell.text.strip() for cell in row.cells]
-            rows.append(cells)
-        md_table = convert_table_to_markdown(rows)
-        markdown_lines.append(md_table)
-        markdown_lines.append("")
-    
-    return "\n".join(markdown_lines)
-
-###############################
-# Flask API 엔드포인트
-###############################
-
-@app.route("/convert", methods=["POST"])
-def convert_file_to_markdown():
-    if "file" not in request.files:
-        return jsonify({"error": "No file provided"}), 400
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "Empty filename"}), 400
-
-    filename = file.filename.lower()
-    ext = os.path.splitext(filename)[1]
-    tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
-            file.save(tmp.name)
-            tmp_path = tmp.name
-
-        if ext in [".pdf"]:
-            markdown = extract_combined_markdown(tmp_path)
-        elif ext in [".doc", ".docx"]:
-            markdown = convert_docx_to_markdown(tmp_path)
-        else:
-            return jsonify({"error": "Unsupported file type"}), 400
-
-        return jsonify({"markdown": markdown})
+        markdown_text = process_pdf_to_markdown(file)
+        return jsonify({"markdown": markdown_text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        if tmp_path and os.path.exists(tmp_path):
-            os.remove(tmp_path)
+
+###############################
+# Markdown 분할(split) 함수들
+###############################
+
+def split_markdown_by_page(markdown_text):
+    """
+    Markdown 문서를 '---' 구분자를 기준으로 페이지별로 분할합니다.
+    각 분할된 결과는 페이지 내용(문자열)을 포함하는 리스트로 반환합니다.
+    """
+    # 구분자가 양쪽에 여백이 있을 수 있으므로 패턴에 유의
+    pages = re.split(r'\n\s*---\s*\n', markdown_text)
+    # 빈 문자열은 제거한 후 반환
+    return [page.strip() for page in pages if page.strip()]
+
+def split_markdown_by_paragraph(markdown_text):
+    """
+    앞서 작성한 정교한 문단 분할 로직 (코드 블록 및 표 영역 고려)
+    """
+    lines = markdown_text.splitlines()
+    paragraphs = []
+    current_block = []
+    current_block_type = None  # "normal", "table", "code"
+    in_code_block = False
+    code_block_delimiter = None
+
+    def flush_block():
+        nonlocal current_block, current_block_type
+        if current_block:
+            block_text = "\n".join(current_block).strip()
+            if block_text:
+                paragraphs.append(block_text)
+            current_block = []
+            current_block_type = None
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # 코드 블록 처리 (백틱으로 시작)
+        code_block_match = re.match(r'^(```+)', line)
+        if code_block_match:
+            delimiter = code_block_match.group(1)
+            if not in_code_block:
+                flush_block()
+                in_code_block = True
+                current_block_type = "code"
+                code_block_delimiter = delimiter
+            current_block.append(line)
+            if in_code_block and line.strip().endswith(code_block_delimiter) and i != 0:
+                flush_block()
+                in_code_block = False
+                code_block_delimiter = None
+            i += 1
+            continue
+
+        # 테이블 라인 판단: 시작이 파이프(|)로 시작하면 테이블 라인으로 판단
+        is_table_line = bool(re.match(r'^\s*\|', line))
+        if is_table_line:
+            if current_block_type != "table":
+                flush_block()
+                current_block_type = "table"
+            current_block.append(line)
+            i += 1
+            continue
+
+        # 일반 텍스트 줄 처리
+        if line.strip() == "":
+            if current_block_type == "table":
+                j = i + 1
+                found_table = False
+                while j < len(lines):
+                    if lines[j].strip():
+                        if re.match(r'^\s*\|', lines[j]):
+                            found_table = True
+                        break
+                    j += 1
+                if found_table:
+                    i += 1
+                    continue
+            flush_block()
+            i += 1
+            continue
+
+        if current_block_type != "normal":
+            flush_block()
+            current_block_type = "normal"
+        current_block.append(line)
+        i += 1
+
+    flush_block()
+    return paragraphs
+
+def split_markdown(markdown_text, split_method="page"):
+    """
+    split_method에 따라 Markdown 문서를 분할합니다.
+    - "page": '---' 구분자 기준 분할
+    - "paragraph": 코드 블록 및 표 영역을 고려한 문단 단위 분할
+    """
+    if split_method == "page":
+        return split_markdown_by_page(markdown_text)
+    elif split_method == "paragraph":
+        return split_markdown_by_paragraph(markdown_text)
+    else:
+        raise ValueError("지원하지 않는 분할 방식입니다. 'page' 또는 'paragraph' 선택 가능.")
+
+@app.route('/split', methods=['POST'])
+def split_markdown_endpoint():
+    """
+    JSON 형식의 요청에서 'markdown'과 'split_method' 값을 받아서,
+    지정한 기준으로 Markdown 문서를 분할한 결과를 JSON으로 반환합니다.
+    예시 요청 JSON:
+    {
+      "markdown": "전체 Markdown 내용...",
+      "split_method": "page"   // 또는 "paragraph"
+    }
+    """
+    data = request.get_json()
+    if not data or "markdown" not in data:
+        return jsonify({"error": "요청 JSON에 'markdown' 필드가 필요합니다."}), 400
+    
+    markdown_text = data["markdown"]
+    split_method = data.get("split_method", "page")
+    
+    try:
+        split_result = split_markdown(markdown_text, split_method)
+        return jsonify({"split_result": split_result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+###############################
+# 문단/문장 분할 재조정
+###############################
+
+def reformat_markdown(markdown_text, mode="sentence"):
+    """
+    Markdown 텍스트를 단락/문장 단위로 재조정합니다.
+    
+    - 먼저 빈 줄(\n\n)을 기준으로 단락을 분리합니다.
+    - mode가 "sentence"인 경우, 각 단락 내에서 문장 경계를 기준으로 분리한 후,
+      각 문장을 새로운 줄에 배치합니다.
+    - mode가 "paragraph"인 경우, 단락별로 공백을 정리하여 반환합니다.
+    """
+    # 단락 단위 분할: 연속된 빈 줄로 구분
+    paragraphs = re.split(r'\n\s*\n', markdown_text.strip())
+    
+    if mode == "sentence":
+        reformatted_paragraphs = []
+        for para in paragraphs:
+            # 코드 블록 등 특별한 영역이 포함되어 있다면 해당 부분은 건너뛰도록 할 수 있음.
+            # 여기서는 단순하게 문장 분리를 진행합니다.
+            # 문장 경계: 마침표, 느낌표, 물음표 뒤에 공백이 있는 경우 분할
+            sentences = re.split(r'(?<=[.?!])\s+', para.strip())
+            # 각 문장을 개별 줄로 배치 (문장 사이에 개행문자 삽입)
+            reformatted_para = "\n".join(sentences)
+            reformatted_paragraphs.append(reformatted_para)
+        # 각 단락은 빈 줄로 구분
+        return "\n\n".join(reformatted_paragraphs)
+    
+    elif mode == "paragraph":
+        # 단락별로 양쪽 공백 제거 후 다시 합침
+        return "\n\n".join([para.strip() for para in paragraphs])
+    else:
+        raise ValueError("지원하지 않는 mode입니다. 'sentence' 또는 'paragraph'를 선택하세요.")
+
+@app.route('/reformat', methods=['POST'])
+def reformat_markdown_endpoint():
+    """
+    JSON 형식의 요청에서 'markdown'과 선택적으로 'mode' 값을 받아,
+    단락/문장 단위로 재조정한 Markdown 텍스트를 JSON으로 반환합니다.
+    
+    예시 요청 JSON:
+    {
+      "markdown": "전체 Markdown 내용...",
+      "mode": "sentence"  // 또는 "paragraph"
+    }
+    """
+    data = request.get_json()
+    if not data or "markdown" not in data:
+        return jsonify({"error": "요청 JSON에 'markdown' 필드가 필요합니다."}), 400
+    
+    markdown_text = data["markdown"]
+    mode = data.get("mode", "sentence")
+    
+    try:
+        reformatted = reformat_markdown(markdown_text, mode=mode)
+        return jsonify({"reformatted_markdown": reformatted})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+###############################
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8021, debug=True)

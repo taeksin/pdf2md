@@ -267,8 +267,30 @@ def main():
     if len(st.session_state["splitted_list"]) == 0 and not st.session_state["result_md"]:
         st.info("아직 결과가 없습니다. 먼저 파일을 첨부하고 'Start' 버튼을 눌러주세요.")
     else:
-        tabs = st.tabs(["Table View", "Markdown View", "Text View"])
+        tabs = st.tabs(["Markdown View", "Text View", "Table View"])
         with tabs[0]:
+            st.markdown("#### Markdown View")
+            st.download_button(
+                label="Download Markdown",
+                data=st.session_state["result_md"],
+                file_name=st.session_state["md_file_name"],
+                mime="text/markdown"
+            )
+            st.markdown(st.session_state["result_md"])
+            
+        with tabs[1]:
+            st.markdown("#### Text View")
+            text_result = "\n".join(st.session_state["splitted_list"])
+            txt_file_name = st.session_state["md_file_name"].replace(".md", ".txt") if st.session_state["md_file_name"] else "result.txt"
+            st.download_button(
+                label="Download Text",
+                data=text_result,
+                file_name=txt_file_name,
+                mime="text/plain"
+            )
+            st.text_area("Text", text_result, height=10000)
+            
+        with tabs[2]:
             st.markdown("#### Table View")
             df = pd.DataFrame(st.session_state["splitted_list"], columns=["Chunk"])
             if not df.empty:
@@ -283,26 +305,6 @@ def main():
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
             st.dataframe(df, width=10000, height=1200)
-        with tabs[1]:
-            st.markdown("#### Markdown View")
-            st.download_button(
-                label="Download Markdown",
-                data=st.session_state["result_md"],
-                file_name=st.session_state["md_file_name"],
-                mime="text/markdown"
-            )
-            st.markdown(st.session_state["result_md"])
-        with tabs[2]:
-            st.markdown("#### Text View")
-            text_result = "\n".join(st.session_state["splitted_list"])
-            txt_file_name = st.session_state["md_file_name"].replace(".md", ".txt") if st.session_state["md_file_name"] else "result.txt"
-            st.download_button(
-                label="Download Text",
-                data=text_result,
-                file_name=txt_file_name,
-                mime="text/plain"
-            )
-            st.text_area("Text", text_result, height=10000)
 
 if __name__ == "__main__":
     main()

@@ -302,7 +302,7 @@ def main():
                 file_name=txt_file_name,
                 mime="text/plain"
             )
-            st.text_area("Text", text_result, height=1200)
+            st.text_area("Text", text_result, height=10000)
 
 if __name__ == "__main__":
     main()

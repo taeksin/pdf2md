@@ -135,11 +135,11 @@ def main():
             [
                 "None",  # 선택 시 분할하지 않고 Loader 결과만 표시
                 "Recursive Text Splitter",
-                "Token-based Splitter",
+                # "Token-based Splitter",
                 "Line-based Splitter",
                 "Sentence-based Splitter",
                 "Paragraph-based Splitter",
-                "Semantic-based Splitter",
+                # "Semantic-based Splitter",
                 "MarkdownHeaderTextSplitter",
                 "Custom Splitter"  # 기존 Page Splitter 대신 Custom Splitter 선택
             ],

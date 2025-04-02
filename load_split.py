@@ -41,19 +41,21 @@ if "md_file_name" not in st.session_state:
 # =============================================================================
 # Markdown 포맷팅 함수
 # =============================================================================
-def format_text_to_markdown(text: str) -> str:
+def format_text_to_markdown(text: str):
     """
     각 줄을 검사하여,
-    - 만약 줄 전체가 '---'라면 앞뒤에 개행 문자를 추가합니다.
+    - 만약 줄 전체가 '---'라면 앞뒤에 개행 문자를 추가하고, 그 앞에 현재 페이지 번호(page_{page_cnt})를 붙입니다.
     - 빈 줄이 아니면 줄 끝에 공백 두 칸을 추가하여 Markdown 강제 줄바꿈을 적용합니다.
     - 예) "| --- |" 등 표 구분자에는 영향을 주지 않습니다.
     """
     lines = text.splitlines()
     formatted_lines = []
+    page_cnt = 1  # 페이지 번호 초기화
     for line in lines:
         # 줄 전체가 정확히 '---'인 경우
         if line.strip() == '---':
-            formatted_lines.append("\n---\n")
+            formatted_lines.append(f"\npage_{page_cnt}  \n\n---\n")
+            page_cnt += 1
         else:
             # 빈 줄이 아니면 줄 끝에 공백 두 칸 추가
             if line.strip():
@@ -61,6 +63,7 @@ def format_text_to_markdown(text: str) -> str:
             else:
                 formatted_lines.append("")
     return "\n".join(formatted_lines)
+
 
 # =============================================================================
 # 메인 Streamlit UI 함수

@@ -10,3 +10,11 @@ rapidfuzz
 PyPDF2
 streamlit
 openpyxl
+sentence-transformers
+
+
+
+
+
+
+

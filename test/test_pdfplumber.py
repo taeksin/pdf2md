@@ -132,5 +132,5 @@ def extract_tables_only(pdf_path):
                 print(f"페이지 {page_number}의 표 {table_index} 이미지가 {table_img_path}에 저장되었습니다.")
 
 if __name__ == '__main__':
-    pdf_path = "./test/pdf/정처기4~5p.pdf"  # PDF 파일 경로를 필요에 맞게 수정하세요.
+    pdf_path = "./test/pdf/DB손보5p.pdf"  # PDF 파일 경로를 필요에 맞게 수정하세요.
     extract_tables_only(pdf_path)

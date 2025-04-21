@@ -3,6 +3,8 @@ import pdfplumber
 import io
 import re
 import logging
+from collections import defaultdict, Counter
+from statistics import median
 
 app = Flask(__name__)
 
@@ -10,15 +12,147 @@ app = Flask(__name__)
 # 상수 및 사전 컴파일된 정규표현식
 ###############################
 
-# 헤더/푸터 제거 비율 (페이지 높이의 비율)
-HEADER_HEIGHT_RATIO = 0.1  # 상단 10%
-FOOTER_HEIGHT_RATIO = 0.1  # 하단 10%
+# 헤더/푸터 후보 영역 비율 (PDF 상단/하단에서 추출)
+HEADER_HEIGHT_RATIO = 0.2   # 상단 10%
+FOOTER_HEIGHT_RATIO = 0.1   # 하단 10%
+
+# 텍스트 유사도 임계값 (자카드 유사도)
+JACCARD_THRESHOLD = 0.5
+
+# 빈도 임계값: 전체 페이지의 몇 % 이상에서 유사한 후보가 있어야 공통으로 간주할지
+FREQUENCY_THRESHOLD = 0.7
 
 # 기본 설정: 로그 레벨과 출력 포맷 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 ###############################
-# PDF -> Markdown 변환 함수들
+# 텍스트 유사도 계산 함수 (자카드 유사도)
+###############################
+def jaccard_similarity(s1, s2):
+    """
+    두 문자열의 자카드 유사도를 계산합니다.
+    단어 단위로 소문자 비교합니다.
+    """
+    set1 = set(s1.lower().split())
+    set2 = set(s2.lower().split())
+    if not set1 or not set2:
+        return 0.0
+    return len(set1 & set2) / len(set1 | set2)
+
+###############################
+# 단어들을 그룹화해서 라인 생성 (수정됨)
+###############################
+def group_words_to_lines(words, threshold=3):
+    """
+    pdfplumber의 extract_words() 결과를 이용하여
+    y 좌표가 가까운 단어들을 하나의 라인으로 그룹화합니다.
+    반환값은 (min_top, max_bottom, line_text) 튜플의 리스트로 생성됩니다.
+    """
+    if not words:
+        return []
+    words = sorted(words, key=lambda w: w["top"])
+    lines = []
+    current_line = [words[0]]
+    current_top = float(words[0]["top"])
+    current_bottom = float(words[0]["bottom"])
+    
+    for word in words[1:]:
+        word_top = float(word["top"])
+        word_bottom = float(word["bottom"])
+        # y 좌표 차이가 threshold 이하이면 같은 라인으로 봄
+        if abs(word_top - current_top) <= threshold:
+            current_line.append(word)
+            current_bottom = max(current_bottom, word_bottom)
+        else:
+            current_line = sorted(current_line, key=lambda w: float(w["x0"]))
+            line_text = " ".join(w["text"] for w in current_line)
+            lines.append((current_top, current_bottom, line_text))
+            current_line = [word]
+            current_top = word_top
+            current_bottom = word_bottom
+    # 마지막 라인 추가
+    if current_line:
+        current_line = sorted(current_line, key=lambda w: float(w["x0"]))
+        line_text = " ".join(w["text"] for w in current_line)
+        lines.append((current_top, current_bottom, line_text))
+    return lines
+
+###############################
+# 전역 헤더/푸터 영역(비율) 산출 함수 (텍스트 유사도 기반 추가)
+###############################
+def compute_global_header_footer_bounds(pdf, header_candidate_ratio=HEADER_HEIGHT_RATIO, footer_candidate_ratio=FOOTER_HEIGHT_RATIO):
+    """
+    각 페이지의 상단/하단 후보 영역(각각 10%)에서 그룹화한 라인들을 대상으로,
+    자카드 유사도를 이용하여 여러 페이지에 걸쳐 공통으로 등장하는 (즉, 헤더/푸터로 판단되는) 
+    후보 라인을 찾습니다.
+    - 헤더: 각 페이지에서 (y 중심이 상단 후보 영역에 해당) 라인의 max_bottom 비율을 후보로 함.
+    - 푸터: 각 페이지에서 (y 중심이 하단 후보 영역에 해당) 라인의 min_top 비율을 후보로 함.
+    
+    각 페이지마다, 공통으로 등장하는 후보 (빈도 기준 FREQUENCY_THRESHOLD 이상) 중
+    헤더는 최대 bottom 비율, 푸터는 최소 top 비율을 추출한 후, 전체 문서의 중앙값을 반환합니다.
+    
+    반환 값: (median_header_frac, median_footer_frac)
+    """
+    total_pages = len(pdf.pages)
+    header_candidates_per_page = []
+    footer_candidates_per_page = []
+    
+    # 각 페이지별 후보 라인 추출
+    for idx, page in enumerate(pdf.pages):
+        height = page.height
+        lines = group_words_to_lines(page.extract_words(), threshold=3)
+        
+        header_candidates = []
+        footer_candidates = []
+        for (line_top, line_bottom, line_text) in lines:
+            center_y = (line_top + line_bottom) / 2.0
+            # 헤더 후보: 상단 10% 내의 라인
+            if center_y <= header_candidate_ratio * height:
+                ratio = line_bottom / height
+                header_candidates.append({"text": line_text, "ratio": ratio})
+            # 푸터 후보: 하단 10% 내의 라인
+            if center_y >= (1 - footer_candidate_ratio) * height:
+                ratio = line_top / height
+                footer_candidates.append({"text": line_text, "ratio": ratio})
+        header_candidates_per_page.append(header_candidates)
+        footer_candidates_per_page.append(footer_candidates)
+    
+    # 공통으로 등장하는 헤더 후보 찾기 (텍스트 유사도로 비교)
+    common_header_ratios = []
+    for i, candidates in enumerate(header_candidates_per_page):
+        for cand in candidates:
+            count = 0
+            for other in header_candidates_per_page:
+                if any(jaccard_similarity(cand["text"], ocand["text"]) >= JACCARD_THRESHOLD for ocand in other):
+                    count += 1
+            if count / total_pages >= FREQUENCY_THRESHOLD:
+                common_header_ratios.append(cand["ratio"])
+    
+    # 공통으로 등장하는 푸터 후보 찾기 (텍스트 유사도로 비교)
+    common_footer_ratios = []
+    for i, candidates in enumerate(footer_candidates_per_page):
+        for cand in candidates:
+            count = 0
+            for other in footer_candidates_per_page:
+                if any(jaccard_similarity(cand["text"], ocand["text"]) >= JACCARD_THRESHOLD for ocand in other):
+                    count += 1
+            if count / total_pages >= FREQUENCY_THRESHOLD:
+                common_footer_ratios.append(cand["ratio"])
+    
+    if common_header_ratios:
+        median_header_frac = median(common_header_ratios)
+    else:
+        median_header_frac = header_candidate_ratio  # 기본값
+    
+    if common_footer_ratios:
+        median_footer_frac = median(common_footer_ratios)
+    else:
+        median_footer_frac = 1 - footer_candidate_ratio  # 기본값
+    
+    return median_header_frac, median_footer_frac
+
+###############################
+# PDF -> Markdown 변환 함수들 (실제 헤더/푸터 영역 제거 적용)
 ###############################
 def convert_table_to_markdown(table_data):
     """
@@ -35,54 +169,28 @@ def convert_table_to_markdown(table_data):
         md_lines.append("| " + " | ".join(row) + " |")
     return "\n".join(md_lines)
 
-def group_words_to_lines(words, threshold=3):
-    """
-    pdfplumber의 extract_words() 결과를 기준으로 y 좌표가 가까운 단어들을
-    하나의 라인으로 그룹화합니다.
-    """
-    if not words:
-        return []
-    words = sorted(words, key=lambda w: w["top"])
-    lines = []
-    current_line = []
-    current_top = words[0]["top"]
-
-    for word in words:
-        if abs(word["top"] - current_top) <= threshold:
-            current_line.append(word)
-        else:
-            current_line = sorted(current_line, key=lambda w: w["x0"])
-            line_text = " ".join(w["text"] for w in current_line)
-            lines.append((current_top, line_text))
-            current_line = [word]
-            current_top = word["top"]
-    if current_line:
-        current_line = sorted(current_line, key=lambda w: w["x0"])
-        line_text = " ".join(w["text"] for w in current_line)
-        lines.append((current_top, line_text))
-    return lines
-
-def is_inside_bbox(x, y, bbox):
-    """
-    (x, y)가 bbox (x0, top, x1, bottom) 내부에 있는지 확인합니다.
-    """
-    x0, top, x1, bottom = bbox
-    return (x0 <= x <= x1) and (top <= y <= bottom)
-
 def process_pdf_to_markdown(pdf_file):
     """
-    PDF 파일의 각 페이지에서 헤더/푸터 영역을 제거한 후,
-    텍스트와 표 객체를 좌표 기반으로 추출하여 Markdown 형식 문자열로 변환합니다.
-    텍스트와 표가 혼합된 경우, 페이지 내에서 위쪽 좌표 기준 정렬을 하여 원본 순서를 최대한 재현합니다.
+    PDF 파일의 각 페이지에서 상단과 하단 10% 영역에서
+    실제 헤더와 푸터 영역(픽셀 단위)을 산출한 후,
+    해당 영역의 텍스트를 제거하고 나머지 텍스트와 표 객체를
+    좌표 기반으로 추출하여 Markdown 형식 문자열로 변환합니다.
     각 페이지의 내용은 구분자 '---'로 연결됩니다.
     """
     page_contents = []
     with pdfplumber.open(pdf_file) as pdf:
-        for page in pdf.pages:
+        # 전역적으로 실제 헤더와 푸터의 비율을 산출 (텍스트 유사도 기반)
+        median_header_frac, median_footer_frac = compute_global_header_footer_bounds(pdf)
+        logging.info(f"산출된 실제 헤더 비율: {median_header_frac:.3f}, 푸터 비율: {median_footer_frac:.3f}")
+        
+        for p_idx, page in enumerate(pdf.pages):
             width, height = page.width, page.height
-            crop_top = height * HEADER_HEIGHT_RATIO
-            crop_bottom = height * (1 - FOOTER_HEIGHT_RATIO)
-            cropped_page = page.within_bbox((0, crop_top, width, crop_bottom))
+            # 실제 헤더와 푸터 경계 (픽셀 단위)
+            actual_header_bound = median_header_frac * height
+            actual_footer_bound = median_footer_frac * height
+            
+            # 전체 페이지에서 단어 추출 (테이블 제외용)
+            cropped_page = page
             
             # 표 객체 추출 (좌표 정보 포함)
             tables = []
@@ -100,21 +208,27 @@ def process_pdf_to_markdown(pdf_file):
                 except Exception:
                     continue
 
-            # 텍스트 객체 추출: extract_words()를 이용해 단어 단위 추출 후 라인별로 그룹화
+            # 텍스트 객체 추출: extract_words()로 단어 단위 추출 후 그룹화
             words = cropped_page.extract_words()
             filtered_words = []
             for w in words:
                 cx = (float(w["x0"]) + float(w["x1"])) / 2
                 cy = (float(w["top"]) + float(w["bottom"])) / 2
+                # 테이블 내부 단어 제외
                 inside_table = False
                 for t in tables:
-                    if is_inside_bbox(cx, cy, t["bbox"]):
+                    if (t["bbox"][0] <= cx <= t["bbox"][2]) and (t["bbox"][1] <= cy <= t["bbox"][3]):
                         inside_table = True
                         break
-                if not inside_table:
-                    filtered_words.append(w)
+                if inside_table:
+                    continue
+                # 실제 헤더 영역 (0 ~ actual_header_bound)와 푸터 영역 (actual_footer_bound ~ 하단)에 해당하면 제외
+                if float(w["bottom"]) <= actual_header_bound or float(w["top"]) >= actual_footer_bound:
+                    continue
+                filtered_words.append(w)
+                
             text_lines = group_words_to_lines(filtered_words)
-            text_objects = [{"type": "text", "y": y, "content": txt} for y, txt in text_lines]
+            text_objects = [{"type": "text", "y": t, "content": txt} for t, _, txt in text_lines]
 
             # 텍스트와 표를 y 좌표 기준으로 합쳐 원본 순서를 재현
             all_objects = text_objects + tables
@@ -126,8 +240,11 @@ def process_pdf_to_markdown(pdf_file):
                 elif obj["type"] == "table":
                     page_lines.append("\n" + obj["content"] + "\n")
             page_contents.append("\n".join(page_lines))
-    # 각 페이지를 '---' 구분자로 연결하여 반환
-    return "\n---\n".join(page_contents)
+    # \n---\n를 기준으로 조각을 나누고 각 조각의 맨 앞에 page_를 붙여 지게 함
+    numbered_pages = []
+    for i, content in enumerate(page_contents, start=1):
+        numbered_pages.append(f"page_{i}\n\n{content}")
+    return "\n---\n".join(numbered_pages)
 
 @app.route('/convert', methods=['POST'])
 def convert_pdf_endpoint():
@@ -151,7 +268,6 @@ def convert_pdf_endpoint():
 ###############################
 # Markdown 분할(split) 함수들
 ###############################
-
 def split_markdown_by_page(markdown_text):
     """
     Markdown 문서를 '---' 구분자를 기준으로 페이지별로 분할합니다.
@@ -336,8 +452,8 @@ def reformat_markdown_endpoint():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 ###############################
-
+# 메인 실행부
+###############################
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8021, debug=True)

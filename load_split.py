@@ -75,7 +75,7 @@ def main():
     pdf_file = st.file_uploader("PDF 파일을 업로드하세요", type=["pdf"])
     
     # pdf 폴더에 있는 PDF 파일 목록 (예: 프로젝트 내 "pdf" 폴더)
-    pdf_folder = "pdf"
+    pdf_folder = "test/pdf"
     pdf_list = []
     if os.path.exists(pdf_folder):
         pdf_list = [f for f in os.listdir(pdf_folder) if f.lower().endswith(".pdf")]
@@ -86,7 +86,7 @@ def main():
     pdf_choice = st.radio(
         "PDF 파일 선택 (라디오 버튼 선택 시, 해당 폴더의 파일을 사용합니다)",
         options=["None"] + pdf_list,
-        index=0,
+        index=2,
         key="pdf_choice"
     )
     
